@@ -1,1 +1,520 @@
-hello world
+PRACTICAL 5
+A: Perform error management on the given data using pandas package.
+import pandas as pd
+data = {
+    "Name": ["Gauresh", "Aman", None, "Raj"],
+    "Age": [23, None, 25, 23],
+    "Salary": [5000, 6000, None, 5000]
+}
+df = pd.DataFrame(data)
+print("Original Data")
+print(df)
+
+df = df.drop_duplicates()
+
+df["Age"] = df["Age"].fillna(df["Age"].mean())
+df["Salary"] = df["Salary"].fillna(df["Salary"].mean())
+df["Name"] = df["Name"].fillna("Unknown")
+
+print("\nClearedData")
+print(df)
+
+B: Write python/R program to create the network routing diagram from the
+import networkx as nx
+import matplotlib.pyplot as plt
+G = nx.Graph()
+G.add_edges_from([
+    ("router A", "router B"),
+    ("router A", "router C"),
+    ("router B", "router D"),
+    ("router C", "router D")
+])
+nx.draw(G, with_labels=True,
+        node_color = "lightblue",
+        node_size=2000)
+plt.show()
+
+C: Write a python/R program to build acyclic graph
+import networkx as nx
+import matplotlib.pyplot as plt
+
+G = nx.DiGraph()
+
+G.add_edges_from([
+    (1,2),
+    (1,3),
+    (2,4),
+    (3,5)
+])
+print("Is DNG?", nx.is_directed_acyclic_graph(G))
+nx.draw(G, with_labels=True, node_color="Pink")
+plt.show()
+
+D: Write python/R program to pick the content for Bill Boards from the given data
+import pandas as pd
+
+df = pd.DataFrame({
+    "Product": ["TV","Phone","Laptop","Tablets"],
+    "Sales":[120,300,200,150]
+    })
+
+billboard = df.sort_values("Sales", ascending=False).head(2)
+print(billboard)
+
+E: Write a python/R program to generate GML file from given csv file.
+import pandas as pd
+import networkx as nx
+data = {"Source":["A","A","B"],
+        "Target":["B","C","D"]
+}
+
+df= pd.DataFrame(data)
+G = nx.from_pandas_edgelist(df,
+                            source="Source",
+                            target="Target")
+
+nx.write_gml(G,"network.gml")
+print("GML File Created")
+
+F: Write python/R program to plan location of warehouse from the given data.
+import pandas as pd
+
+df = pd.DataFrame({
+    "X": [10,20,30,40],
+    "Y": [15,25,35,45]
+
+})
+
+warehouse_x = df["X"].mean()
+warehouse_y = df["Y"].mean()
+print("Suggested Warehouse Location")
+print(warehouse_x, warehouse_y)
+
+G: Write python/R program using data science via clustering to determine new
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+df = pd.DataFrame({
+    "X": [2,3,4,20,21,22],
+    "Y":[2,4,3,20,22,21]
+})
+kmeans = KMeans (n_clusters=2, random_state=0)
+df["Cluster"] = kmeans.fit_predict(df)
+print(df)
+plt.scatter(df["X"],df["Y"],
+            c=df["Cluster"],
+            s=100)
+plt.scatter(kmeans.cluster_centers_[:,0],
+            kmeans.cluster_centers_[:,1],
+            marker="x",
+            s=200)
+
+H: Using the given data Write python/R program to plan the shipping routers
+plt.show()
+
+import networkx as nx
+G = nx.Graph()
+G.add_weighted_edges_from([
+    ("Mumbai", "Delhi",5),
+    ("Delhi","Chennai",7),
+    ("Mumbai", "Chennai", 15)
+])
+route = nx.shortest_path(G, "Mumbai", "Chennai", weight="weight")
+print(route)
+
+I:  Write python/R program to delete the best packing option to ship in
+import pandas as pd
+df = pd.DataFrame({
+    "Packing": ["Box A", "Box B", "Box C"],
+    "Cost": [500,300,700]
+})
+
+best = df["Cost"].idxmin()
+df = df.drop (best)
+print(df)
+
+J: Write python program to create delivery route using the given data.
+import networkx as nx
+import matplotlib.pyplot as plt
+G = nx.DiGraph()
+G.add_edges_from([
+    ("Warehouse", "Area1"),
+    ("Area1","Area2"),
+    ("Area2","Customer")
+])
+nx.draw(G,
+        with_labels=True,
+        arrows=True)
+plt.show()
+
+K: Write python program to crate simple forex trading planner from the given data.
+import pandas as pd
+df = pd.DataFrame({
+"Rate": [82.5,83.0,82.8,84.1]
+})
+buy = df["Rate"].min()
+sell = df["Rate"].max()
+print("Buy at:", buy)
+print("Sell at :", sell)
+profit = sell-buy
+print("Profit:", profit)
+
+L:  Write python program to process the balance sheet to ensure the only good
+import pandas as pd
+df = pd.DataFrame({
+    "Revenue": [100000, None, 120000],
+    "Expense": [60000,50000, None]
+
+})
+
+df = df.fillna(0)
+df["Profit"] = df ["Revenue"]-df["Expense"]
+print(df)
+
+M: Write python program to generate payroll from the given data.
+import pandas as pd
+df_karan = pd.DataFrame({
+    "Employee": ["John", "Alice", "Bob"],
+    "Basic": [30000,35000,40000]
+})
+df_karan["HRA"] = df_karan["Basic"]*0.20
+df_karan["DA"] = df_karan["Basic"]*0.20
+df_karan["Gross Salary"] = (
+    df_karan["Basic"]+
+    df_karan["HRA"]+
+    df_karan["DA"]
+)
+print(df_karan)
+
+PRACTICAL 6
+Build the time hub, links and satellites.
+import pandas as pd
+import matplotlib.pyplot as plt
+import networkx as nx
+
+data = {
+    "CustomerID": [101, 102, 101, 103, 104, 102],
+    "OrderID": [5001, 5002, 5003, 5004, 5005, 5006],
+    "CustomerName": ["Gauresh", "Rahul", "Aman", "Rohan", "Kiran", "Arjun"],
+    "Location": ["Mumbai", "Bangalore", "Pune", "Jaipur", "Delhi", "Hyderabad"],
+    "Amount": [5000, 6500, 4000, 2000, 3000, 7000],
+    "loadDate": pd.Timestamp.today().date()
+}
+
+df = pd.DataFrame(data)
+df
+link_Customer = df[["CustomerID"]].drop_duplicates()
+link_Customer
+
+hub_Customer = df[["CustomerID"]].drop_duplicates()
+hub_Customer
+
+satellite_Customer = df[["CustomerID", "OrderID", "Location"]].drop_duplicates()
+satellite_Customer
+
+orders = df.groupby("CustomerName")["OrderID"].count()
+
+plt.figure(figsize=(7,4))
+orders.plot(kind="bar", color="orange")
+
+plt.title("Number of Orders per Customer")
+plt.xlabel("Customer Name")
+plt.ylabel("Number of Orders")
+plt.xticks(rotation=0)
+
+plt.show()
+
+G = nx.Graph()
+
+for Customer in df["CustomerID"].drop_duplicates():
+    G.add_node(Customer, node_type="Customer")
+
+for _, row in df.iterrows():  
+    Customer_id = row["CustomerID"]
+    Order_ID = row["OrderID"]
+
+    G.add_node(Order_ID, node_type="Order")  
+    G.add_edge(Customer_id, Order_ID)  
+
+plt.figure(figsize=(10, 6))
+pos = nx.spring_layout(G, seed=42)
+
+plt.figure(figsize=(10, 8))
+
+nx.draw_networkx(
+    G,
+    pos,
+    with_labels=True,
+    node_color="red",
+    node_size=600,
+    font_size=9
+)
+
+plt.title("Customer-Order Relationship")
+plt.show()
+
+PRACTICAL 7
+AIM: Transforming data
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("/content/titanic.csv")
+df
+
+df.head()
+
+df.tail()
+
+df.describe()
+
+df.info()
+
+df.shape
+
+df = df.drop_duplicates()
+df
+
+print("\n missing values")
+print(df.isnull().sum())
+
+df['Age'].fillna(df['Age'].mean(), inplace=True)
+df['Embarked'].fillna(df['Embarked'].mode()[0], inplace=True)
+if "Cabin" in df.columns:
+  df.drop("Cabin", axis=1, inplace=True)
+df
+
+import pandas as pd
+df = pd.read_csv("/content/titanic.csv")
+df["AgeGroup"] = pd.cut(df['Age'],
+                              bins=[0,12,18,35,60,100],
+                              labels=["Child", "Teen", "Adult", "MiddleAge", "Senior"])
+df["FamilySize"] = df["SibSp"] + df["Parch"] + 1
+df["FareCategory"] = pd.cut(df["Fare"],
+                                    bins = [0,100,200,300,520],
+                                    labels = ["Low", "Medium", "High", "Very High"])
+df["IsAlone"] = np.where(df["FamilySize"] == 1, 'Yes', 'No')
+df
+
+survival = df.groupby("Pclass")["Survived"].mean()*100
+plt.figure(figsize=(8,6))
+survival.plot(kind="bar")
+plt.xlabel("PassengerClass")
+plt.ylabel("Survival Rate (%)")
+plt.title("Survival Rate by Passenger Class")
+plt.show()
+
+PRACTICAL 8
+Organizing Data
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('/content/Social_Network_Ads.csv')
+print('Original Shape: \n', df.shape, '\n')
+df.head()
+
+print('\n information')
+print(df.info())
+
+print('\nmissinf values')
+print(df.isna().sum())
+
+print('\n duplicate values')
+print(df.duplicated().sum())
+
+df.drop_duplicates(inplace=True)
+
+for col in df.columns:
+  if df[col].isna().sum() > 0:
+    if df[col].dtype == 'object':
+      df[col].fillna(df[col].mode()[0], inplace=True)
+    else:
+      df[col].fillna(df[col].mean(), inplace=True)
+
+df['Gender'] = df['Gender'].str.strip().str.capitalize()
+
+df.rename(columns={
+    "EstimatedSalary": "Salary",
+    "Purchased": "Purchase_Status"
+    }, inplace=True)
+
+df = df[(df['Age'] >=18) &
+                      (df['Age'] <=65) &
+                      (df['Salary'] >0)]
+
+df['Salary_Band'] =  pd.qcut(df['Salary'] ,q=4,labels=['low','medium','high','very high'])
+
+bins = [18,30,45,65]
+labels=['young','Adult','Senior']
+df['Age_Category'] = pd.cut(df['Age'],bins=bins,labels=labels, right = False)
+
+df['Gender_Code'] = df['Gender'].replace({'Male': 1, 'Female': 0})
+
+df['Normalized_Salary'] = (
+    (df['Salary'] - df ['Salary'].min())/
+    (df['Salary'].max() - df['Salary'].min()))
+
+df['Salary_Rank'] = df['Salary'].rank(method='dense',ascending=False)
+
+df.sort_values(
+    by=[
+        "Age_Category",
+        "Salary",
+        "Purchase_Status"
+    ],
+    ascending=[True,False,False],
+    inplace=True
+)
+
+summary = df.groupby(["Gender", "Age_Category"]).agg(
+    Total_Customers=("User ID", "count"),
+    Average_Salary=("Salary", "mean"),
+    Total_Salary=("Salary", "sum"),
+    Max_Salary=("Salary", "max"),
+    Min_Salary=("Salary", "min")
+)
+print("\n Group Summary")
+print(summary)
+
+pivot = pd.pivot_table(
+    df,
+    index="Age_Category",
+    columns="Gender",
+    values="Salary",
+    aggfunc=[
+        np.mean,
+        np.max,
+        np.min
+    ]
+)
+print("\n Pivot Table")
+print(pivot,"\n\n")
+
+organized = df.set_index(["Gender", "Age_Category"])
+print("\n Organized Dataset \n")
+print(organized.head())
+
+Q1 = df['Salary'].quantile(0.25)
+Q3 = df['Salary'].quantile(0.75)
+IQR = Q3 - Q1
+Outliers = df[(df['Salary'] < (Q1 - 1.5 * IQR)) | (df['Salary'] > (Q3 + 1.5 * IQR))]
+
+organized.to_csv("organized_dataset.csv")
+summary.to_csv("group_summary.csv")
+pivot.to_csv("pivot_table.csv")
+Outliers.to_csv("outliers.csv")
+
+print("\n Files Created Successfully \n")
+print("1. Organized Dataset: organized_dataset.csv")
+print("2. Group Summary: group_summary.csv")
+print("3. Pivot Table: pivot_table.csv")
+print("4. Outliers: outliers.csv")
+
+PRACTICAL 9
+GENERATING STRATERGY
+
+!pip install faker
+
+import pandas as pd
+import numpy as np
+from faker import Faker
+import random
+
+fake = Faker()
+Faker.seed(42)
+random.seed(42)
+np.random.seed(42)
+
+n = 1000
+
+user_id = np.arange(1000, 1000 + n)
+
+gender = np.random.choice(['Male', 'Female'], size = n, p = [0.55, 0.45])
+age = np.random.randint(18, 61 ,size = n)
+
+salary = (age * 3500 + np.random.randint(15000, 80000, size = n)
+).astype(int)
+salary = np.clip(salary, 20000, 25000)
+
+experience = np.maximum(
+    age - 22 + np.random.randint(-2, 4, size = n),
+    0
+)
+
+education = np.random.choice(
+    ['Diploma', 'Bachelor', 'Master', 'PhD'],
+    size = n,
+    p = [0.15, 0.50, 0.25, 0.10]
+)
+
+city = np.random.choice(
+    ['Mumbai', 'Delhi', 'Banglore', 'Hyderabad', 'Ahemdabad',
+     'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Surat'
+     ], size = n,
+)
+
+joining_date = [
+    fake.date_between(start_date = '-10y', end_date = 'today')
+    for _ in range(n)
+]
+
+probability = (
+    (salary/salary.max()) * 0.45
+    + (experience/experience.max()) * 0.35
+    + np.random.random(size = n) * 0.20
+)
+purchased = (probability >= 0.55).astype(int)
+
+df = pd.DataFrame({
+    'User ID': user_id,
+    'Gender': gender,
+    'Age': age,
+    'Salary': salary,
+    'Experience': experience,
+    'Education': education,
+    'City': city,
+    'Joining Date': joining_date,
+    'Purchased': purchased
+})
+
+for column in ["Age", "Salary", "Education"]:
+  missing_rows = np.random.choice(
+      df.index,
+      15,
+      replace = False
+  )
+  df.loc[missing_rows, column] = np.nan
+
+duplicates = df.sample(20, random_state = 42)
+df = pd.concat(
+    [df,duplicates],
+    ignore_index = True
+    )
+
+df = df.sample(
+    frac = 1,
+    random_state = 42
+).reset_index(drop = True)
+
+print("\n Dataset Shape")
+print(df.shape)
+print("\n Data Types")
+print(df.dtypes)
+print("\n First Five Rows")
+print(df.head())
+print("\n Last Five Rows")
+print(df.tail())
+print("\n Missing Values")
+print(df.isnull().sum())
+print("\n Duplicate Records")
+print(df.duplicated().sum())
+print("\n Statistical Summary")
+print(df.describe(include='all'))
+
+df.to_csv('Generated_Employee_Dataset.csv',index = False)
+print("\n Dataset Genrated Succesfully")
+print("File Name : Generated_Employee_Dataset.csv")
+print("File Location : /content/Genarated_Employee_Dataset.csv")
