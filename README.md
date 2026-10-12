@@ -548,4 +548,481 @@ if __name__ == '__main__':
 
     plt.xlim(-1.2, 1.2)
     plt.show()
+
+PRACTICAL 6A
+AIM: Kohonen Self-Organizing Map (SOM)
+
+pip install minisom matplotlib numpy
+import numpy as np
+import matplotlib.pyplot as pl
+from minisom import MiniSom
+
+colors = np.array([
+    [0., 0., 0.],
+    [0., 0., 1.],
+    [0., 0., 0.5],
+    [0.125, 0.529, 1.0],
+    [0.33, 0.4, 0.67],
+    [0.6, 0.5, 1.0],
+    [0., 1., 0.],
+    [1., 0., 0.],
+    [0., 1., 1.],
+    [1., 0., 1.],
+    [1., 1., 0.],
+    [1., 1., 1.],
+    [.33, .33, .33],
+    [.5, .5, .5],
+    [.66, .66, .66]
+])
+
+color_names = [
+    'black', 'blue', 'darkblue', 'skyblue',
+    'greyblue', 'lilac', 'green', 'red',
+    'cyan', 'violet', 'yellow', 'white',
+    'darkgrey', 'mediumgrey', 'lightgrey'
+]
+
+# Train SOM (20x30 grid, 3 input features for RGB)
+
+som = MiniSom(
+    20, 30, 3,
+    sigma=1.0,
+    learning_rate=0.05
+)
+
+som.random_weights_init(colors)
+
+som.train_random(colors, 400)
+
+# Get weights for background matrix
+
+weights = som.get_weights()
+
+pl.imshow(
+    weights[:, :, 0],
+    origin='lower'
+)
+
+# Map each color to its winning neuron (row, col)
+
+mapped = [som.winner(c) for c in colors]
+
+pl.title('Color SOM')
+
+for i, m in enumerate(mapped):
+
+    pl.text(
+        m[1],
+        m[0],
+        color_names[i],
+        ha='center',
+        va='center',
+        bbox=dict(
+            facecolor='white',
+            alpha=0.5,
+            lw=0
+        )
+    )
+
+pl.show()
+
+PRACTICAL 7A
+AIM: Write a program for Linear Separation
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def create_distance_function(a, b, c):
+
+    """
+    0 = ax + by + c
+
+    Returns tuple (d, pos)
+
+    d is the distance.
+
+    If pos == -1 point is below the line,
+    0 on the line and +1 if above the line.
+    """
+
+    def distance(x, y):
+
+        nom = a * x + b * y + c
+
+        if nom == 0:
+            pos = 0
+
+        elif (nom < 0 and b < 0) or (nom > 0 and b > 0):
+            pos = -1
+
+        else:
+            pos = 1
+
+        return (
+            np.absolute(nom) / np.sqrt(a ** 2 + b ** 2),
+            pos
+        )
+
+    return distance
+
+
+points = [
+    (3.5, 1.8),
+    (1.1, 3.9)
+]
+
+fig, ax = plt.subplots()
+
+ax.set_xlabel("sweetness")
+ax.set_ylabel("sourness")
+
+ax.set_xlim([-1, 6])
+ax.set_ylim([-1, 8])
+
+X = np.arange(-0.5, 5, 0.1)
+
+size = 10
+
+for (index, (x, y)) in enumerate(points):
+
+    if index == 0:
+
+        ax.plot(
+            x, y, "o",
+            color="darkorange",
+            markersize=size
+        )
+
+    else:
+
+        ax.plot(
+            x, y, "oy",
+            markersize=size
+        )
+
+step = 0.05
+
+for x in np.arange(0, 1 + step, step):
+
+    slope = np.tan(np.arccos(x))
+
+    dist4line1 = create_distance_function(
+        slope, -1, 0
+    )
+
+    Y = slope * X
+
+    results = []
+
+    for point in points:
+
+        results.append(
+            dist4line1(*point)
+        )
+
+    if results[0][1] != results[1][1]:
+
+        ax.plot(X, Y, "g-")
+
+    else:
+
+        ax.plot(X, Y, "r-")
+
+plt.show()
+
+PRACTICAL 7B
+AIM: Write a program for Hopfield Network Model for Associative Memory
+
+pip install brian2
+pip install --no-deps neurodynex3
+
+import matplotlib.pyplot as plt
+
+from neurodynex3.hopfield_network import (
+    network,
+    pattern_tools,
+    plot_tools
+)
+
+pattern_size = 5
+
+# Create an instance of the class HopfieldNetwork
+
+hopfield_net = network.HopfieldNetwork(
+    nr_neurons=pattern_size ** 2
+)
+
+# Instantiate a pattern factory
+
+factory = pattern_tools.PatternFactory(
+    pattern_size,
+    pattern_size
+)
+
+# Create a checkerboard pattern and add it to the pattern list
+
+checkerboard = factory.create_checkerboard()
+
+pattern_list = [checkerboard]
+
+# Add random patterns to the list
+
+pattern_list.extend(
+    factory.create_random_pattern_list(
+        n_patterns=3,
+        on_probability=0.5
+    )
+)
+
+plot_tools.plot_pattern_list(pattern_list)
+
+# How similar are the random patterns and the checkerboard?
+
+overlap_matrix = pattern_tools.compute_overlap_matrix(
+    pattern_list
+)
+
+plot_tools.plot_overlap_matrix(
+    overlap_matrix
+)
+
+# Let the Hopfield network learn the patterns
+
+hopfield_net.store_patterns(pattern_list)
+
+# Create a noisy version of a pattern
+
+noisy_init_state = pattern_tools.flip_n(
+    checkerboard,
+    nr_of_flips=4
+)
+
+hopfield_net.set_state_from_pattern(
+    noisy_init_state
+)
+
+# From this initial state, let the network dynamics evolve
+
+states = hopfield_net.run_with_monitoring(
+    nr_steps=4
+)
+
+# Each network state is a vector.
+# Reshape it to the same shape used to create the patterns.
+
+states_as_patterns = factory.reshape_patterns(
+    states
+)
+
+# Plot the states of the network
+
+plot_tools.plot_state_sequence_and_overlap(
+    states_as_patterns,
+    pattern_list,
+    reference_idx=0,
+    suptitle="Network dynamics"
+)
+
+plt.show()
+
+PRACTICAL 8A
+AIM: Membership and Identity Operators — in, not in
+
+# Membership and Identity Operators
+
+# Finding common members in two lists
+# without using the 'in' operator
+
+def overlapping(list1, list2):
+
+    c = 0
+    d = 0
+
+    # Count length of list1
+
+    for i in list1:
+        c += 1
+
+    # Count length of list2
+
+    for i in list2:
+        d += 1
+
+    # Compare elements using indices
+
+    for i in range(0, c):
+
+        for j in range(0, d):
+
+            if list1[i] == list2[j]:
+                return 1
+
+    return 0
+
+
+list1 = [1, 2, 3, 4, 5]
+list2 = [5, 6, 7, 8, 9]
+
+if overlapping(list1, list2):
+
+    print("Overlapping")
+
+else:
+
+    print("Not Overlapping")
+
+PRACTICAL 8B
+AIM: Membership and Identity Operators — is, is not
+
+# Python program to illustrate the use of
+# 'is' identity operator
+
+x = 5
+
+if type(x) is int:
+
+    print("True")
+
+else:
+
+    print("False")
+
+
+# Python program to illustrate the use of
+# 'is not' identity operator
+
+x = 5.2
+
+if type(x) is not int:
+
+    print("True")
+
+else:
+
+    print("False")
+
+PRACTICAL 9A
+AIM: Find Ratios Using Fuzzy Logic
+
+pip install fuzzywuzzy python-Levenshtein
+# Find ratios using fuzzy logic
+
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
+
+s1 = "I love fuzzySforfuzzys"
+s2 = "I am loving fuzzysforfuzzys"
+
+print("FuzzyWuzzy Ratio:", fuzz.ratio(s1, s2))
+
+print("FuzzyWuzzy Partial Ratio:",
+      fuzz.partial_ratio(s1, s2))
+
+print("FuzzyWuzzy TokenSort Ratio:",
+      fuzz.token_sort_ratio(s1, s2))
+
+print("FuzzyWuzzy TokenSet Ratio:",
+      fuzz.token_set_ratio(s1, s2))
+
+print("FuzzyWuzzy W Ratio:",
+      fuzz.WRatio(s1, s2), '\n\n')
+
+# For process library
+
+query = 'fuzzys for fuzzys'
+
+choices = [
+    'fuzzy for fuzzy',
+    'fuzzy fuzzy',
+    'g.for fuzzys'
+]
+
+print("List of ratios:")
+
+print(process.extract(query, choices), '\n')
+
+print("Best among the above list:",
+      process.extractOne(query, choices))
+
+PRACTICAL 9B
+AIM: Solve Tipping Problem Using Fuzzy Logic
+pip install scikit-fuzzy
+# Solve Tipping problem using fuzzy logic
+
+import numpy as np
+import skfuzzy as fuzz
+
+from skfuzzy import control as ctrl
+
+quality = ctrl.Antecedent(
+    np.arange(0, 11, 1),
+    'quality'
+)
+
+service = ctrl.Antecedent(
+    np.arange(0, 11, 1),
+    'service'
+)
+
+tip = ctrl.Consequent(
+    np.arange(0, 26, 1),
+    'tip'
+)
+
+quality.automf(3)
+service.automf(3)
+
+tip['low'] = fuzz.trimf(
+    tip.universe,
+    [0, 0, 13]
+)
+
+tip['medium'] = fuzz.trimf(
+    tip.universe,
+    [0, 13, 25]
+)
+
+tip['high'] = fuzz.trimf(
+    tip.universe,
+    [13, 25, 25]
+)
+
+rule1 = ctrl.Rule(
+    quality['poor'] | service['poor'],
+    tip['low']
+)
+
+# rule2 = ctrl.Rule(
+#     quality['average'] | service['average'],
+#     tip['medium']
+# )
+
+rule2 = ctrl.Rule(
+    service['average'],
+    tip['medium']
+)
+
+rule3 = ctrl.Rule(
+    service['good'] | quality['good'],
+    tip['high']
+)
+
+tipping_ctrl = ctrl.ControlSystem(
+    [rule1, rule2, rule3]
+)
+
+tipping = ctrl.ControlSystemSimulation(
+    tipping_ctrl
+)
+
+tipping.input['quality'] = 6.5
+tipping.input['service'] = 9.8
+
+tipping.compute()
+
+print(tipping.output['tip'])
+
+tip.view(sim=tipping)
+
 ```
