@@ -1,521 +1,1206 @@
-DATA SCIENCE
-PRACTICAL 5
-A: Perform error management on the given data using pandas package.
+# PYTHON CODES FROM THE PDF
+
+## PRACTICAL NO: 02 - Aim 2A (CSV to HORUS)
+
+```python
+import csv
+import json
+from google.colab import files
+
+#Step-01 Create a sample CSV file
+csv_file = "students.csv"
+students = [
+    ["id","Name","Age","Course"],
+    [1,"A",20,"MSCIT"],
+    [2,"B",21,"MSCIT"],
+    [3,"C",22,"MSCIT"],
+    [4,"D",23,"MSCIT"],
+    [5,"E",24,"MSCIT"]
+]
+
+with open(csv_file,"w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerows(students)
+print("Sample CSV File Create:", csv_file)
+
+#Step-02 Convert CSV to HORUS Format
+def csv_to_horus(input_file, output_file):
+    records = []
+    with open(input_file, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            records.append({
+                "type":"record",
+                "data":dict(row)
+            })
+    
+    horus= {
+        "horus_version":"1.0",
+        "source_format":"CSV",
+        "records": records
+    }
+    
+    #Save hours output
+    with open(output_file,"w", encoding="utf-8") as f:
+        json.dump(horus, f, indent = 4)
+    return horus
+
+#Step-03 Perform Conversion
+output_file = "students_horus.json"
+horus_data = csv_to_horus(csv_file, output_file)
+
+#Step-04 Display HORUS Output
+print("\n ======== HORUS OUTPUT ========")
+print(json.dumps(horus_data, indent=4))
+
+#Step-05 Download the HORUS File
+files.download(output_file)
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2B (XML to HORUS)
+
+```python
+import xml.etree.ElementTree as ET
+import json
+from google.colab import files
+
+# STEP 1: Create a sample XML file
+xml_file = "students.xml"
+xml_data = """<students>
+    <student>
+        <id>1</id>
+        <name>Rahul</name>
+        <age>20</age>
+        <course>BCA</course>
+    </student>
+    <student>
+        <id>2</id>
+        <name>Priya</name>
+        <age>21</age>
+        <course>BSc IT</course>
+    </student>
+    <student>
+        <id>3</id>
+        <name>Amit</name>
+        <age>20</age>
+        <course>BCA</course>
+    </student>
+</students>"""
+
+with open(xml_file, "w", encoding="utf-8") as f:
+    f.write(xml_data)
+
+print("Sample XML file created: ", xml_file)
+
+# STEP 2: Convert XML elements into Python dictionary
+def xml_to_dict(element):
+    # If the element has no child elements
+    if len(element) == 0:
+        return element.text.strip() if element.text else ""
+    
+    data = {}
+    for child in element:
+        child_data = xml_to_dict(child)
+        # Handle repeated elements
+        if child.tag in data:
+            if not isinstance(data[child.tag], list):
+                data[child.tag] = [data[child.tag]]
+            data[child.tag].append(child_data)
+        else:
+            data[child.tag] = child_data
+    return data
+
+# STEP 3: Convert XML to HORUS
+def xml_to_horus(input_file, output_file):
+    tree = ET.parse(input_file)
+    root = tree.getroot()
+    data = xml_to_dict(root)
+    
+    horus = {
+        "horus_version": "1.0",
+        "source_format": "XML",
+        "root": root.tag,
+        "data": data
+    }
+    
+    # Save HORUS output
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(horus, f, indent=4)
+    
+    return horus
+
+# STEP 4: Perform conversion
+output_file = "students_xml.json"
+horus_data = xml_to_horus(xml_file, output_file)
+
+# STEP 5: Display HORUS output
+print("\n=========== HORUS OUTPUT ===========\n")
+print(json.dumps(horus_data, indent=4))
+
+# STEP 6: Download HORUS file
+files.download(output_file)
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2C (JSON to HORUS)
+
+```python
+import json
+from google.colab import files
+
+#STEP 1: CREATE SAMPLE JSON DATA
+data = [
+    {
+        "id": 101,
+        "Name": "Suraj",
+        "Department": "IT",
+        "Marks": 85
+    },
+    {
+        "id": 102,
+        "Name": "Neeraj",
+        "Department": "IT",
+        "Marks": 86
+    },
+    {
+        "id": 103,
+        "Name": "Devil",
+        "Department": "IT",
+        "Marks": 90
+    },
+    {
+        "id": 104,
+        "Name": "Abhishek",
+        "Department": "IT",
+        "Marks": 80
+    },
+    {
+        "id": 105,
+        "Name": "Gauresh",
+        "Department": "IT",
+        "Marks": 87
+    },
+]
+
+# STEP 2: Save Data in JSON FORMAT
+with open("students.json","w") as file:
+    json.dump(data,file,indent=1)
+
+print("JSON CREATED SUCCESSFULLY")
+
+# STEP 3: READ JSON DATA
+with open("students.json","r") as file:
+    data = json.load(file)
+
+print("\n Original JSON Data")
+print(json.dumps(data,indent=4))
+
+# STEP 4: CONVERT JSON DATA TO SAMPLE HORUS TEXT
+def convert_to_horus(records):
+    horus_records = []
+    for record in records:
+        fields = [] # Fixed: changed '-' to '='
+        
+        for key, value in record.items():
+            fields.append(f"{key}|{value}")
+        
+        horus_records.append(" ".join(fields))
+    return "\n".join(horus_records)
+
+horus_data = convert_to_horus(data)
+
+# STEP 5: DISPLAY CONVERTED DATA
+print("\n Converted Horus Data:")
+print(horus_data)
+
+# STEP 6: SAVE OUTPUT TO A HORUS FILE
+with open("students.horus", "w") as file:
+    file.write(horus_data)
+
+print("\nOutput successfully saved to 'students.horus'")
+
+# STEP 7: DOWNLOAD THE OUTPUT FILE
+files.download("students.horus")
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2D (MySQL to HORUS)
+
+```python
+# PRAC 2D MYSQL DATABASE TO HORUS
+
 import pandas as pd
-data = {
-    "Name": ["Gauresh", "Aman", None, "Raj"],
-    "Age": [23, None, 25, 23],
-    "Salary": [5000, 6000, None, 5000]
+import sqlite3
+from google.colab import files
+
+# STEP 1: CREATE A SAMPLE DATABASE
+
+sInputFileName = "/content/utility.db"
+sInputTable = "Country_Code"
+
+conn = sq.connect(sInputFileName)
+
+# STEP 2: CREATE AND POPULATE THE COUNTRY CODE TABLE
+
+create_table = """
+CREATE TABLE IF NOT EXISTS Country_Code(
+    "Country CODE" TEXT,
+    "ISO-2-CODE" TEXT,
+    "ISO-3-CODE" TEXT,
+    "ISO-3-CODE-ALPHA" TEXT
+)
+"""
+
+conn.execute("DROP TABLE IF EXISTS Country_Code")
+conn.execute(create_table)
+
+country_data = [
+    ("Afghanistan","AF","AFG","AF"),
+    ("Albania","AL","ALB","AL"),
+    ("Algeria","DZ","DZA","DZ"),
+    ("Andorra","AD","AND","AD"),
+    ("Angola","AO","AGO","AO"),
+]
+
+conn.executemany("INSERT INTO Country_Code VALUES(?,?,?)",country_data)
+conn.commit()
+
+# STEP 3: READ DATA FROM THE DATABASE
+
+sSQL = f"SELECT * FROM Country_Code"
+InputData = pd.read_sql_query(sSQL, conn)
+
+print("Input Data Values")
+print(InputData)
+
+# STEP 4: PROCESS THE DATA
+
+ProcessData = InputData.copy()
+
+# Remove unnecessary column
+ProcessData.drop("ISO-2-CODE", axis=1, inplace=True)
+ProcessData.drop("ISO-3-CODE", axis=1, inplace=True)
+
+# Rename columns
+ProcessData.rename(
+    columns={
+        "Country CODE": "CountryName",
+        "ISO-3-CODE-ALPHA": "CountryNumber"
+    },
+    inplace=True
+)
+
+# Set CountryNumber as the index
+ProcessData.set_index("CountryNumber", inplace=True)
+
+# Sort country names in descending order
+ProcessData.sort_values(
+    by="CountryName",
+    axis=0,
+    ascending=False,
+    inplace=True
+)
+
+print("\n Processed Data Values")
+print(ProcessData)
+
+# STEP 5: SAVE THE CONVERTED OUTPUT
+OutputData = ProcessData
+sOutputFileName = "/content/HORUS-MySQL-Country.csv"
+OutputData.to_csv(sOutputFileName, index=True)
+print("\nDatabase to HORUS - Done")
+print("Output file:", sOutputFileName)
+
+# STEP 6: CLOSE DATABASE CONNECTION
+conn.close()
+
+# STEP 7: DOWNLOAD OUTPUT FILE
+files.download(sOutputFileName)
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2E (Picture to HORUS)
+
+```python
+#PRAC 2E PICTURE TO HORUS
+
+import numpy as np
+from PIL import Image
+from google.colab import files
+
+# STEP 1: UPLOAD AN IMAGE
+
+print("Upload an image file (JPG, PNG, etc.)")
+uploaded = files.upload()
+
+# STEP 2: READ THE UPLOADED IMAGE
+
+filename = next(iter(uploaded))
+image = Image.open(filename).convert("RGB")
+print("Image loaded successfully!")
+print("Image size:", image.size)
+print("Image mode:", image.mode)
+
+# STEP 3: RESIZE IMAGE FOR MANAGEABLE PROCESSING
+
+image = image.resize((100, 100))
+
+# STEP 4: CONVERT IMAGE INTO A NUMERICAL ARRAY
+
+image_array = np.array(image)
+print("Image converted into numerical data")
+print("Array shape:", image_array.shape)
+
+# STEP 5: FLATTEN IMAGE PIXEL VALUE
+
+pixel_data = image_array.reshape(-1, 3)
+
+# STEP 6: SAVE PIXEL DATA AS CSV FILE
+
+output_file = "picture_horus.csv"
+np.savetxt(
+    output_file,
+    pixel_data,
+    delimiter=",",
+    fmt="%d",
+    header="Red,Green,Blue",
+    comments=""
+)
+
+# Step 7: DISPLAY SAMPLE OUTPUT
+print("\nFirst 10 pixel values:")
+print(pixel_data[:10])
+print("\nPicture conversion completed!")
+print("Output saved as:", output_file)
+
+# STEP 8: DOWNLOAD OUTPUT
+
+files.download(output_file)
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2F (Video to HORUS)
+
+```python
+# PRAC 2F: VIDEO TO HORUS
+
+import os
+import cv2
+import shutil
+import numpy as np
+import pandas as pd
+from google.colab import files
+
+# STEP 1: UPLOAD VIDEO
+
+print("Upload Your Video File")
+uploaded = files.upload()
+video_name = next(iter(uploaded))
+video_path = "/content/" + video_name
+
+# STEP 2: CREATE TEMPORARY FOLDER TO FRAMES
+
+frame_folder = "/content/temp"
+if os.path.exists(frame_folder):
+    shutil.rmtree(frame_folder)
+os.makedirs(frame_folder)
+print("\nStart Movie to Frames")
+
+# STEP 3: OPEN VIDEO
+
+vidcap = cv2.VideoCapture(video_path)
+if not vidcap.isOpened():
+    raise ValueError("Unable to open video. Please upload a valid video file.")
+fps = vidcap.get(cv2.CAP_PROP_FPS)
+if fps <= 0:
+    fps = 30
+total_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+duration = total_frames / fps
+print("Video FPS:", fps)
+print("Total video frames:", total_frames)
+print("Duration in seconds:", round(duration, 2))
+
+# Extract approximately one frame per second
+frame_interval = max(1, int(fps))
+count = 0
+frame_number = 0
+while True:
+    success, image = vidcap.read()
+    if not success:
+        break
+    if frame_number % frame_interval == 0:
+        frame_path = os.path.join(
+            frame_folder,
+            f"frame-{count:04d}.jpg"
+        )
+        cv2.imwrite(frame_path, image)
+        count += 1
+    frame_number += 1
+vidcap.release()
+print("\nGenerated", count, "frames")
+print("Movie to Frames - Done")
+
+# STEP 4: CONVERT EXTRACTED FRAMES TO HORUS DATA
+
+print("\nStart Frames to HORUS")
+records = []
+# Resize each frame to keep output manageable
+for frame_file in sorted(os.listdir(frame_folder)):
+    if not frame_file.lower().endswith((".jpg", ".jpeg", ".png")):
+        continue
+    
+    frame_path = os.path.join(frame_folder, frame_file)
+    image = cv2.imread(frame_path)
+    if image is None:
+        continue
+    # Resize image
+    image = cv2.resize(image, (32, 32))
+    # Convert BGR to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    height, width, channels = image.shape
+    # Read every pixel
+    for y in range(height):
+        for x in range(width):
+            red, green, blue = image[y, x]
+            records.append({
+                "FrameName": frame_file,
+                "XAxis": x,
+                "YAxis": y,
+                "Red": int(red),
+                "Green": int(green),
+                "Blue": int(blue),
+                "Alpha": 255
+            })
+
+# STEP 5: CREATE HORUS DATABASE
+
+columns = [
+    "XAxis", "YAxis", "Red", "Green",
+    "Blue", "Alpha", "FrameName"
+]
+ProcessData = pd.DataFrame(records, columns=columns)
+print("\nHORUS Data Preview:")
+print(ProcessData.head())
+print("\nRows:", ProcessData.shape[0])
+print("Columns:", ProcessData.shape[1])
+
+# STEP 6: SAVE HORUS OUTPUT TO CSV
+
+output_file = "/content/HORUS-Movie.csv"
+ProcessData.to_csv(output_file, index=False)
+print("\nMovie to HORUS - Done")
+print("Output saved as:", output_file)
+
+# STEP 7: DOWNLOAD OUTPUT FILE
+
+files.download(output_file)
+```
+
+---
+
+## PRACTICAL NO: 02 - Aim 2G (Audio to HORUS)
+
+```python
+# PRAC 2G: AUDIO TO HORUS
+
+import os
+import subprocess
+import numpy as np
+import pandas as pd
+from scipy.io import wavfile
+from scipy.signal import resample_poly
+from google.colab import files
+
+# STEP 1: INSTALL FFMPEG IF REQUIRED
+print("Checking audio conversion tool...")
+if (
+    subprocess.run(
+        ["bash", "-lc", "command -v ffmpeg"],
+        capture_output=True
+    ).returncode
+    != 0
+):
+    subprocess.run(["apt-get", "update", "-qq"], check=True)
+    subprocess.run(["apt-get", "install", "-qq", "ffmpeg"], check=True)
+
+# STEP 2: UPLOAD AUDIO FILE
+
+print("\nUpload your audio file (MP3 or WAV)")
+uploaded = files.upload()
+if not uploaded:
+    raise ValueError("No audio file was uploaded.")
+audio_file = next(iter(uploaded))
+
+# STEP 3: CONVERT UPLOADED AUDIO TO WAV
+
+wav_file = "/content/converted_audio.wav"
+result = subprocess.run(
+    [
+        "ffmpeg", "-y", "-i", audio_file,
+        "-vn", "-ac", "1", "-ar", "16000",
+        wav_file
+    ],
+    capture_output=True,
+    text=True
+)
+if result.returncode != 0:
+    raise ValueError(
+        "Audio conversion failed. Please check:\n"
+        + result.stderr[-1500:]
+    )
+print("\nAudio converted to WAV successfully!")
+
+# STEP 4: READ THE WAV FILE
+
+sample_rate, audio_data = wavfile.read(wav_file)
+print("Sample rate:", sample_rate, "Hz")
+print("Audio samples:", len(audio_data))
+
+# STEP 5: CONVERT SAMPLES TO NORMALIZED NUMERICAL VALUE
+
+audio_data = audio_data.astype(np.float64)
+maximum = np.max(np.abs(audio_data)) if len(audio_data) else 0
+if maximum > 0:
+    audio_data = audio_data / maximum
+
+# STEP 6: CONVERT SAMPLES TO MANAGEABLE OUTPUT
+
+target_rate = 1000
+if sample_rate > target_rate:
+    audio_data = resample_poly(
+        audio_data, target_rate, sample_rate
+    )
+    effective_rate = target_rate
+else:
+    effective_rate = sample_rate
+
+# STEP 7: CREATE HORUS-STYLE TABULAR FORMAT DATA
+
+ProcessData = pd.DataFrame({
+    "Time": np.arange(len(audio_data)) / effective_rate,
+    "Amplitude": audio_data
+})
+print("\nAudio Data Preview:")
+print(ProcessData.head(10))
+
+# STEP 8: SAVE OUTPUT
+
+output_file = "/content/HORUS-Audio.csv"
+ProcessData.to_csv(output_file, index=False)
+print("\nAudio to HORUS - Done")
+print("Output file:", output_file)
+print("Total records:", len(ProcessData))
+
+# STEP 9: DOWNLOAD OUTPUT
+
+files.download(output_file)
+```
+
+---
+
+## PRACTICAL NO: 05 - Aim 5A (Error Management)
+
+```python
+import pandas as pd
+
+data_suraj = {
+    "Name": ["John","Alice","None","John"],
+    "Age": [23,None,25,24],
+    "Salary": [50000,60000,None,50000]
 }
-df = pd.DataFrame(data)
-print("Original Data")
-print(df)
 
-df = df.drop_duplicates()
+df_suraj = pd.DataFrame(data_suraj)
 
-df["Age"] = df["Age"].fillna(df["Age"].mean())
-df["Salary"] = df["Salary"].fillna(df["Salary"].mean())
-df["Name"] = df["Name"].fillna("Unknown")
+print("ORIGINAL DATA")
+print(data_suraj)
 
-print("\nClearedData")
-print(df)
+#Removing Duplicate Data
+df_suraj = df_suraj.drop_duplicates()
 
-B: Write python/R program to create the network routing diagram from the
+#Filling Missing Details
+df_suraj["Age"] = df_suraj["Age"].fillna(df_suraj["Age"].mean())
+df_suraj["Salary"] = df_suraj["Salary"].fillna(df_suraj["Salary"].mean())
+df_suraj["Name"] = df_suraj["Name"].fillna("Unknown")
+
+print("Cleaned Data")
+print(df_suraj)
+```
+
+---
+
+## PRACTICAL NO: 05 - Aim 5B (Network Routing Diagram)
+
+```python
 import networkx as nx
 import matplotlib.pyplot as plt
-G = nx.Graph()
-G.add_edges_from([
-    ("router A", "router B"),
-    ("router A", "router C"),
-    ("router B", "router D"),
-    ("router C", "router D")
-])
-nx.draw(G, with_labels=True,
-        node_color = "lightblue",
+
+G_suraj = nx.Graph()
+
+G_suraj.add_edges_from([(1,2),
+                        (1,3),
+                        (2,4),
+                        (3,5)
+                        ])
+
+print("Is DAG?", nx.is_directed_acyclic_graph(G_abhi))
+nx.draw(G_suraj, with_labels=True,
+        node_color="Lightblue",
         node_size=2000)
 plt.show()
+```
 
-C: Write a python/R program to build acyclic graph
+---
+
+## PRACTICAL NO: 05 - Aim 5C (Acyclic Graph)
+
+```python
 import networkx as nx
 import matplotlib.pyplot as plt
 
-G = nx.DiGraph()
+G_suraj = nx.DiGraph()
 
-G.add_edges_from([
-    (1,2),
-    (1,3),
-    (2,4),
-    (3,5)
-])
-print("Is DNG?", nx.is_directed_acyclic_graph(G))
-nx.draw(G, with_labels=True, node_color="Pink")
+G_suraj.add_edges_from([
+    ("R1","R2"),("R1","R3"),("R3","R5"),("R2","R4")])
+
+nx.draw(G_suraj, with_labels=True ,
+        node_color="blue",
+        node_size=2000)
+
 plt.show()
+```
 
-D: Write python/R program to pick the content for Bill Boards from the given data
+---
+
+## PRACTICAL NO: 05 - Aim 5D (Billboard Content)
+
+```python
 import pandas as pd
-
 df = pd.DataFrame({
-    "Product": ["TV","Phone","Laptop","Tablets"],
+    "Product": ["TV","Phone","Laptop","Tablet"],
     "Sales":[120,300,200,150]
-    })
-
-billboard = df.sort_values("Sales", ascending=False).head(2)
-print(billboard)
-
-E: Write a python/R program to generate GML file from given csv file.
-import pandas as pd
-import networkx as nx
-data = {"Source":["A","A","B"],
-        "Target":["B","C","D"]
-}
-
-df= pd.DataFrame(data)
-G = nx.from_pandas_edgelist(df,
-                            source="Source",
-                            target="Target")
-
-nx.write_gml(G,"network.gml")
-print("GML File Created")
-
-F: Write python/R program to plan location of warehouse from the given data.
-import pandas as pd
-
-df = pd.DataFrame({
-    "X": [10,20,30,40],
-    "Y": [15,25,35,45]
-
 })
 
-warehouse_x = df["X"].mean()
-warehouse_y = df["Y"].mean()
+billboard = df.sort_values("Sales",ascending=False).head(2)
+
+print(billboard)
+```
+
+---
+
+## PRACTICAL NO: 05 - Aim 5E (GML File)
+
+```python
+import pandas as pd
+import networkx as nx
+
+data_suraj = {
+    "Source":["A","A","B"],
+    "Target":["B","C","D"]
+}
+
+df = pd.DataFrame(data_suraj)
+G_suraj = nx.from_pandas_edgelist(df, source="Source", target="Target")
+nx.write_gml(G_suraj,"Network.gml")
+print("GML FILE CREATED")
+```
+
+---
+
+## PRACTICAL NO: 05 - Aim 5F (Warehouse Location)
+
+```python
+import pandas as pd
+df_suraj = pd.DataFrame ({
+    "X":[10,20,30,40],
+    "Y":[15,25,35,45]
+})
+
+warehouse_x = df_suraj["X"].mean()
+warehouse_y = df_suraj["Y"].mean()
 print("Suggested Warehouse Location")
 print(warehouse_x, warehouse_y)
+```
 
-G: Write python/R program using data science via clustering to determine new
+---
+
+## PRACTICAL NO: 05 - Aim 5G (Clustering for Warehouse)
+
+```python
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
-df = pd.DataFrame({
-    "X": [2,3,4,20,21,22],
-    "Y":[2,4,3,20,22,21]
+df_suraj = pd.DataFrame({
+    "X":[2,3,4,20,21,22],
+    "Y":[2,3,4,20,22,21]
 })
-kmeans = KMeans (n_clusters=2, random_state=0)
-df["Cluster"] = kmeans.fit_predict(df)
-print(df)
-plt.scatter(df["X"],df["Y"],
-            c=df["Cluster"],
-            s=100)
-plt.scatter(kmeans.cluster_centers_[:,0],
-            kmeans.cluster_centers_[:,1],
-            marker="x",
-            s=200)
 
-H: Using the given data Write python/R program to plan the shipping routers
+kmeans = KMeans(n_clusters=3,random_state=0)
+df_suraj["Cluster"] = kmeans.fit_predict(df_suraj)
+print(df_suraj)
+plt.scatter(df_suraj["X"],df_suraj["Y"],
+c=df_suraj["Cluster"],
+cmap="viridis")
+plt.scatter(kmeans.cluster_centers_[:, 0],
+kmeans.cluster_centers_[:, 1],
+Marker = "X",
+s=200)
 plt.show()
+```
 
+---
+
+## PRACTICAL NO: 05 - Aim 5H (Shipping Routes)
+
+```python
 import networkx as nx
+
 G = nx.Graph()
-G.add_weighted_edges_from([
-    ("Mumbai", "Delhi",5),
+G.add_weighted_edges_from({
+    ("Mumbai","Delhi",5),
     ("Delhi","Chennai",7),
-    ("Mumbai", "Chennai", 15)
-])
+    ("Mumbai","Chennai",15)
+})
+
 route = nx.shortest_path(G, "Mumbai", "Chennai", weight="weight")
 print(route)
+```
 
-I:  Write python/R program to delete the best packing option to ship in
+---
+
+## PRACTICAL NO: 05 - Aim 5I (Packing Option)
+
+```python
 import pandas as pd
 df = pd.DataFrame({
     "Packing": ["Box A", "Box B", "Box C"],
-    "Cost": [500,300,700]
+    "Cost": [500, 300, 700]
 })
 
 best = df["Cost"].idxmin()
-df = df.drop (best)
+df = df.drop(best)
 print(df)
+```
 
-J: Write python program to create delivery route using the given data.
+---
+
+## PRACTICAL NO: 05 - Aim 5J (Delivery Route)
+
+```python
 import networkx as nx
 import matplotlib.pyplot as plt
+
 G = nx.DiGraph()
-G.add_edges_from([
-    ("Warehouse", "Area1"),
+G.add_edges_from({
+    ("Warehouse","Area1"),
     ("Area1","Area2"),
     ("Area2","Customer")
-])
+})
+
 nx.draw(G,
         with_labels=True,
         arrows=True)
 plt.show()
+```
 
-K: Write python program to crate simple forex trading planner from the given data.
+---
+
+## PRACTICAL NO: 05 - Aim 5K (Forex Trading)
+
+```python
 import pandas as pd
-df = pd.DataFrame({
-"Rate": [82.5,83.0,82.8,84.1]
+df=pd.DataFrame({
+    "Rate":[82.5,83.0,82.8,84.1]
 })
-buy = df["Rate"].min()
-sell = df["Rate"].max()
-print("Buy at:", buy)
-print("Sell at :", sell)
-profit = sell-buy
-print("Profit:", profit)
 
-L:  Write python program to process the balance sheet to ensure the only good
+buy_suraj = df["Rate"].min()
+sell=df["Rate"].max()
+print("Buy AT:",buy_suraj)
+print("Sell AT:",sell)
+profit = sell - buy_suraj
+print("Profit:",profit)
+```
+
+---
+
+## PRACTICAL NO: 05 - Aim 5L (Balance Sheet)
+
+```python
 import pandas as pd
 df = pd.DataFrame({
-    "Revenue": [100000, None, 120000],
-    "Expense": [60000,50000, None]
-
+    "Revenue":[100000,None,120000],
+    "Expense":[60000,50000,None]
 })
 
 df = df.fillna(0)
-df["Profit"] = df ["Revenue"]-df["Expense"]
+df["Profit"] = df["Revenue"]-df["Expense"]
 print(df)
+```
 
-M: Write python program to generate payroll from the given data.
+---
+
+## PRACTICAL NO: 05 - Aim 5M (Payroll Generation)
+
+```python
 import pandas as pd
-df_karan = pd.DataFrame({
-    "Employee": ["John", "Alice", "Bob"],
-    "Basic": [30000,35000,40000]
+df = pd.DataFrame({
+    "Employee":["John","Alice","Bob"], 
+    "Basic":[30000,40000,35000]
 })
-df_karan["HRA"] = df_karan["Basic"]*0.20
-df_karan["DA"] = df_karan["Basic"]*0.20
-df_karan["Gross Salary"] = (
-    df_karan["Basic"]+
-    df_karan["HRA"]+
-    df_karan["DA"]
-)
-print(df_karan)
 
-PRACTICAL 6
-Build the time hub, links and satellites.
+df["HRA"] = df["Basic"]*0.20
+df["DA"] = df["Basic"]*0.10
+df["Gross Salary"] =(df["Basic"]+df["HRA"]+df["DA"])
+
+print(df)
+```
+
+---
+
+## PRACTICAL NO: 06 - Aim 6 (Time Hub, Links and Satellites)
+
+```python
 import pandas as pd
 import matplotlib.pyplot as plt
 import networkx as nx
 
-data = {
-    "CustomerID": [101, 102, 101, 103, 104, 102],
-    "OrderID": [5001, 5002, 5003, 5004, 5005, 5006],
-    "CustomerName": ["Gauresh", "Rahul", "Aman", "Rohan", "Kiran", "Arjun"],
-    "Location": ["Mumbai", "Bangalore", "Pune", "Jaipur", "Delhi", "Hyderabad"],
-    "Amount": [5000, 6500, 4000, 2000, 3000, 7000],
-    "loadDate": pd.Timestamp.today().date()
+data_suraj = {
+    "CustomerID":[101,102,101,102,104,102],
+    "OrderID":[5001,5002,5003,5004,5005,5006],
+    "CustomerName":["Yajna","Vishal","Kalpana","Rakesh","Troy","Hydra"],
+    "Location":["Kenya","Brooklyn","India","America","Chicago","Paris"],
+    "Amount":[2500,1500,1000,3000,2500,6000],
+    "LoadDate":pd.Timestamp.today().date()
 }
 
-df = pd.DataFrame(data)
-df
-link_Customer = df[["CustomerID"]].drop_duplicates()
-link_Customer
+df_suraj = pd.DataFrame(data_suraj)
+df_suraj
 
-hub_Customer = df[["CustomerID"]].drop_duplicates()
-hub_Customer
+# Hub Table
+hub_customer_suraj = df_suraj[["CustomerID"]].drop_duplicates()
+hub_customer_suraj
 
-satellite_Customer = df[["CustomerID", "OrderID", "Location"]].drop_duplicates()
-satellite_Customer
+# Link Table
+link_customer_suraj = df_suraj[["CustomerID","OrderID"]].drop_duplicates()
+link_customer_suraj
 
-orders = df.groupby("CustomerName")["OrderID"].count()
+# Satellite Table
+satellite_customer_suraj = df_suraj[["CustomerID","OrderID","CustomerName","location"]]
+satellite_customer_suraj
 
-plt.figure(figsize=(7,4))
-orders.plot(kind="bar", color="orange")
-
-plt.title("Number of Orders per Customer")
-plt.xlabel("Customer Name")
-plt.ylabel("Number of Orders")
+# Visualize the data
+orders_suraj = df_suraj.groupby("CustomerName")["OrderID"].count()
+plt.figure(figsize=(7, 4))
+orders_suraj.plot(kind="bar", color="orange")
+plt.xlabel("CustomerName")
+plt.ylabel("OrderID")
 plt.xticks(rotation=0)
-
 plt.show()
 
-G = nx.Graph()
+G_suraj = nx.Graph()
 
-for Customer in df["CustomerID"].drop_duplicates():
-    G.add_node(Customer, node_type="Customer")
+for customer in hub_customer_suraj["CustomerID"]:
+    G_suraj.add_node(customer, node_type="customer")
 
-for _, row in df.iterrows():  
-    Customer_id = row["CustomerID"]
-    Order_ID = row["OrderID"]
+for _, row in link_customer_suraj.iterrows():
+    customer_id = row["CustomerID"]
+    order_id = row["OrderID"]
+    G_suraj.add_node(order_id, node_type="order")
+    G_suraj.add_edge(customer_id, order_id)
 
-    G.add_node(Order_ID, node_type="Order")  
-    G.add_edge(Customer_id, Order_ID)  
+plt.figure(figsize=(10,6))
+pos_suraj = nx.spring_layout(G_suraj, seed = 42)
 
-plt.figure(figsize=(10, 6))
-pos = nx.spring_layout(G, seed=42)
-
-plt.figure(figsize=(10, 8))
-
-nx.draw_networkx(
-    G,
-    pos,
+nx.draw(
+    G_suraj,
+    pos_suraj,
     with_labels=True,
-    node_color="red",
     node_size=600,
     font_size=9
 )
 
-plt.title("Customer-Order Relationship")
+plt.title("Customer Order Relationship")
 plt.show()
+```
 
-PRACTICAL 7
-AIM: Transforming data
+---
 
+## PRACTICAL NO: 07 - Transforming Data
+
+```python
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("/content/titanic.csv")
-df
+df_suraj = pd.read_csv("/content/Titanic.csv")
+df_suraj
 
-df.head()
+df_suraj.head()
 
-df.tail()
+df_suraj.info()
 
-df.describe()
-
-df.info()
-
-df.shape
-
-df = df.drop_duplicates()
-df
-
-print("\n missing values")
+print("\n Missing Values")
 print(df.isnull().sum())
 
+# Fill Missing values
 df['Age'].fillna(df['Age'].mean(), inplace=True)
 df['Embarked'].fillna(df['Embarked'].mode()[0], inplace=True)
-if "Cabin" in df.columns:
-  df.drop("Cabin", axis=1, inplace=True)
 df
 
-import pandas as pd
-df = pd.read_csv("/content/titanic.csv")
-df["AgeGroup"] = pd.cut(df['Age'],
-                              bins=[0,12,18,35,60,100],
-                              labels=["Child", "Teen", "Adult", "MiddleAge", "Senior"])
-df["FamilySize"] = df["SibSp"] + df["Parch"] + 1
-df["FareCategory"] = pd.cut(df["Fare"],
-                                    bins = [0,100,200,300,520],
-                                    labels = ["Low", "Medium", "High", "Very High"])
-df["IsAlone"] = np.where(df["FamilySize"] == 1, 'Yes', 'No')
-df
-
-survival = df.groupby("Pclass")["Survived"].mean()*100
-plt.figure(figsize=(8,6))
-survival.plot(kind="bar")
-plt.xlabel("PassengerClass")
-plt.ylabel("Survival Rate (%)")
-plt.title("Survival Rate by Passenger Class")
-plt.show()
-
-PRACTICAL 8
-Organizing Data
-
-import pandas as pd
-import numpy as np
-
-df = pd.read_csv('/content/Social_Network_Ads.csv')
-print('Original Shape: \n', df.shape, '\n')
+df["AgGroup"] = df["Age"].apply(lambda x: "Child" if x < 13 else ("Teenage" if x < 20 else "Adult"))
 df.head()
 
-print('\n information')
-print(df.info())
+df['FareCategory'] = pd.cut(df['Fare'],
+                             bins=0, 100, 200, 300],
+                             labels=["Low", "Medium", "High", "Very High"])
+df
 
-print('\nmissinf values')
-print(df.isna().sum())
+df['GenderCode'] = df['Gender'].replace({'Male': 1, 'Female': 0})
+df.head()
 
-print('\n duplicate values')
-print(df.duplicated().sum())
+df['SalaryNormalized'] = (df['Salary'] - df['Salary'].min()) / (df['Salary'].max() - df['Salary'].min())
 
-df.drop_duplicates(inplace=True)
+df
 
-for col in df.columns:
-  if df[col].isna().sum() > 0:
-    if df[col].dtype == 'object':
-      df[col].fillna(df[col].mode()[0], inplace=True)
-    else:
-      df[col].fillna(df[col].mean(), inplace=True)
+df['SalaryRank'] = df['Salary'].rank(ascending=False, method = 'dense')
+df.head()
 
-df['Gender'] = df['Gender'].str.strip().str.capitalize()
+df.sort_values(by=['Age_Group', 'Salary', 'Purchase_Status'], ascending=[True, False, False], inplace=True)
 
-df.rename(columns={
-    "EstimatedSalary": "Salary",
-    "Purchased": "Purchase_Status"
-    }, inplace=True)
-
-df = df[(df['Age'] >=18) &
-                      (df['Age'] <=65) &
-                      (df['Salary'] >0)]
-
-df['Salary_Band'] =  pd.qcut(df['Salary'] ,q=4,labels=['low','medium','high','very high'])
-
-bins = [18,30,45,65]
-labels=['young','Adult','Senior']
-df['Age_Category'] = pd.cut(df['Age'],bins=bins,labels=labels, right = False)
-
-df['Gender_Code'] = df['Gender'].replace({'Male': 1, 'Female': 0})
-
-df['Normalized_Salary'] = (
-    (df['Salary'] - df ['Salary'].min())/
-    (df['Salary'].max() - df['Salary'].min()))
-
-df['Salary_Rank'] = df['Salary'].rank(method='dense',ascending=False)
-
-df.sort_values(
-    by=[
-        "Age_Category",
-        "Salary",
-        "Purchase_Status"
-    ],
-    ascending=[True,False,False],
-    inplace=True
-)
-
-summary = df.groupby(["Gender", "Age_Category"]).agg(
-    Total_Customers=("User ID", "count"),
-    Average_Salary=("Salary", "mean"),
-    Total_Salary=("Salary", "sum"),
-    Max_Salary=("Salary", "max"),
-    Min_Salary=("Salary", "min")
-)
 print("\n Group Summary")
 print(summary)
 
-pivot = pd.pivot_table(
-    df,
-    index="Age_Category",
-    columns="Gender",
-    values="Salary",
-    aggfunc=[
-        np.mean,
-        np.max,
-        np.min
-    ]
-)
-print("\n Pivot Table")
-print(pivot,"\n\n")
+print(pivot, "\n\n")
 
-organized = df.set_index(["Gender", "Age_Category"])
-print("\n Organized Dataset \n")
-print(organized.head())
+survival = df.groupby('Pclass')['Survived'].mean() * 100
+plt.figure(figsize=(8, 6))
+survival.plot(kind='bar')
+plt.xlabel('Passenger Class')
+plt.ylabel('Survival Rate (%)')
+plt.title('Survival Rate by Passenger Class')
+plt.grid(True)
+plt.show()
+```
 
-Q1 = df['Salary'].quantile(0.25)
-Q3 = df['Salary'].quantile(0.75)
-IQR = Q3 - Q1
-Outliers = df[(df['Salary'] < (Q1 - 1.5 * IQR)) | (df['Salary'] > (Q3 + 1.5 * IQR))]
+---
 
-organized.to_csv("organized_dataset.csv")
-summary.to_csv("group_summary.csv")
-pivot.to_csv("pivot_table.csv")
-Outliers.to_csv("outliers.csv")
+## PRACTICAL NO: 08 - Organization of Data
 
-print("\n Files Created Successfully \n")
-print("1. Organized Dataset: organized_dataset.csv")
-print("2. Group Summary: group_summary.csv")
-print("3. Pivot Table: pivot_table.csv")
-print("4. Outliers: outliers.csv")
-
-PRACTICAL 9
-GENERATING STRATERGY
-
-!pip install faker
-
+```python
 import pandas as pd
 import numpy as np
-from faker import Faker
-import random
 
-fake = Faker()
-Faker.seed(42)
-random.seed(42)
-np.random.seed(42)
+df_suraj=pd.read_csv("/content/Social_Network_Ads.csv")
+print("original shape: \n", df_suraj.shape)
+df_suraj.head()
 
-n = 1000
+#after loading the data do data Inspection
+print("\n Information \n")
+print(df_suraj.info())
 
-user_id = np.arange(1000, 1000 + n)
+print("\n Missing values \n")
+print(df_suraj.isna().sum())
 
-gender = np.random.choice(['Male', 'Female'], size = n, p = [0.55, 0.45])
-age = np.random.randint(18, 61 ,size = n)
+print("\n Duplicate values \n")
+print(df_suraj.duplicated().sum())
 
-salary = (age * 3500 + np.random.randint(15000, 80000, size = n)
-).astype(int)
-salary = np.clip(salary, 20000, 25000)
+#Remove the duplicate records
+df_suraj.drop_duplicates(inplace=True)
+print('shape after removing duplicates: \n', df_suraj.shape)
 
-experience = np.maximum(
-    age - 22 + np.random.randint(-2, 4, size = n),
-    0
-)
+#Handles missing values
+for col in df_suraj.columns:
+    if df_suraj[col].isna().sum()>0:
+        if df_suraj[col].dtypes=='object':
+            df_suraj[col].fillna(df_suraj[col].mode()[0], inplace=True)
+        else:
+            df_suraj[col].fillna(df_suraj[col].mean(), inplace=True)
 
-education = np.random.choice(
-    ['Diploma', 'Bachelor', 'Master', 'PhD'],
-    size = n,
-    p = [0.15, 0.50, 0.25, 0.10]
-)
+print("\n Missing values \n")
+print(df_suraj.isna().sum())
 
-city = np.random.choice(
-    ['Mumbai', 'Delhi', 'Banglore', 'Hyderabad', 'Ahemdabad',
-     'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Surat'
-     ], size = n,
-)
+#Standardize Gender Values
+df_suraj['Gender']=df_suraj['Gender'].map({'Male':1, 'Female':0})
+df_suraj.head()
 
-joining_date = [
-    fake.date_between(start_date = '-10y', end_date = 'today')
-    for _ in range(n)
+# Rename Columns
+df_suraj.rename(columns={'EstimatedSalary': 'Salary', 'Purchased': 'Purchase_Status'}, inplace=True)
+
+# Ensure columns are renamed correctly and remove Impossible values
+rename_dict = {'EstimatedSalary': 'Salary', 'Purchased': 'Purchase_Status'}
+df_suraj.rename(columns={k: v for k, v in rename_dict.items() if k in df_suraj.columns}, inplace=True)
+
+# Remove impossible values
+df_suraj = df_suraj[
+    (df_suraj['Age'] >= 18) &
+    (df_suraj['Age'] <= 65) &
+    (df_suraj['Salary'] > 0)
 ]
 
-probability = (
-    (salary/salary.max()) * 0.45
-    + (experience/experience.max()) * 0.35
-    + np.random.random(size = n) * 0.20
-)
-purchased = (probability >= 0.55).astype(int)
+# Display results to confirm success
+print("Current columns:", df_suraj.columns.tolist())
+display(df_suraj.head())
 
+# Bands using quantiles
+# Ensure we use 'Salary' now that renaming is fixed
+df_suraj['Salary_Band'] = pd.qcut(df_suraj['Salary'], q=4, labels=["Low", "Medium", "High", "Very High"])
+display(df_suraj.head())
+
+bins = [18, 30, 45, 65]
+labels = ['Young', 'Adult', 'Senior']
+
+df_suraj['Age_Group'] = pd.cut(df_suraj['Age'], bins=bins, labels=labels)
+df_suraj.head()
+
+#Encode Gender
+df_suraj['Gender_Code'] = df_suraj['Gender'].replace({'Male': 1, 'Female': 0})
+df_suraj.head()
+
+# Normalize Salary
+df_suraj['Salary_Normalized'] = (df_suraj['Salary'] - df_suraj['Salary'].min()) / (df_suraj['Salary'].max() - df_suraj['Salary'].min())
+
+df_suraj.head()
+
+# Salary Rank
+df_suraj['Salary_Rank'] = df_suraj['Salary'].rank(ascending=False, method = 'dense')
+df_suraj.head()
+
+# Multi-level Sorting
+# Fixed: Changed 'Age_Category' to 'Age_Group' to match the actual column name
+df_suraj.sort_values(by=['Age_Group', 'Salary', 'Purchase_Status'], ascending=[True, False, False], inplace=True)
+
+print("\n Group Summary")
+print(summary)
+
+print(pivot, "\n\n")
+
+# Detect Outliers
+Q1 = df_suraj['Salary'].quantile(0.25)
+Q3 = df_suraj['Salary'].quantile(0.75)
+IQR = Q3 - Q1
+Outliers = df_suraj[(df_suraj['Salary'] < Q1 - 1.5 * IQR) | (df_suraj['Salary'] > Q3 + 1.5 * IQR)]
+print("Outliers")
+print(Outliers)
+
+# Export files
+# Final export to CSV for all generated datasets
+try:
+    organized.to_csv("organized_data.csv")
+    summary.to_csv("group_summary.csv")
+    pivot.to_csv("pivot_table.csv")
+    Outliers.to_csv("outliers.csv")
+    print("\n All files created successfully in /content/ \n")
+except NameError as e:
+    print(f"error: {e}. Please ensure all processing cells have been executed.")
+```
+
+---
+
+## PRACTICAL NO: 09 - Generating Data
+
+```python
+#Generate Personal Information
+gender = np.random.choice(['Male','Female'],size = n, p =[0.55,0.45])
+age = np.random.randint(18,61,size = n)
+
+#Generate Salary
+salary = (age * 3500 + np.random.randint(15000,80000, size = n)).astype(int)
+salary = np.clip(salary, 20000,25000)
+
+#Experience yesrs
+EXP = np.maximum(
+age-22 + np.random.randint(-2,4, size = n),
+0
+)
+
+#Generate Education
+Edu = np.random.choice(
+['Highhschool', 'Bachelor', 'Masters','PhD'],
+size = n,
+p = [0.15,0.50,0.25,0.10]
+)
+
+#Generate City
+city = np.random.choice(
+['Mumbai', 'Delhi', 'Banglore','Hyderabad', 'Ahmedabad','Chennai1', 'Kolkata','Pune', 'Jaipur', 'Surat'],
+size = n
+)
+
+#Generate Joining Dates
+join_date = [
+fake.date_between(start_date = '-10y', end_date = 'today')
+for _ in range(n)
+]
+
+#Purchase Probability
+probability = (
+(salary/salary.max()) * 0.45
++ (Exp/exp.max()) * 0.35
++ np.random.random(size = n ) * 0.20
+)
+purchased = (probability >= 6.55).astype(int)
+
+#Build Data Frame
 df = pd.DataFrame({
-    'User ID': user_id,
-    'Gender': gender,
-    'Age': age,
-    'Salary': salary,
-    'Experience': experience,
-    'Education': education,
-    'City': city,
-    'Joining Date': joining_date,
+    'user_id':len(user_Id),
+    'gender':gender,
+    'Age':age,
+    'Salary':salary,
+    'Education':Edu,
+    'city':city,
+    'Joining Date': join_date,
     'Purchased': purchased
 })
 
-for column in ["Age", "Salary", "Education"]:
-  missing_rows = np.random.choice(
-      df.index,
-      15,
-      replace = False
-  )
-  df.loc[missing_rows, column] = np.nan
+# Introducing Missing Values
+for column in["Age","Salary","Education"]:
+    missing_rows = np.random.choice(
+        df.index,
+        15,
+        replace = False
+    )
+    df.loc[missing_rows, column] = np.nan
 
-duplicates = df.sample(20, random_state = 42)
+# Introduce Duplicate Records
+duplicates = df.sample(20, random_state=42)
 df = pd.concat(
     [df,duplicates],
     ignore_index = True
-    )
+)
 
+# Shuffle Dataset
 df = df.sample(
     frac = 1,
     random_state = 42
-).reset_index(drop = True)
+    ).reset_index(
+    drop = True)
 
-print("\n Dataset Shape")
-print(df.shape)
-print("\n Data Types")
-print(df.dtypes)
-print("\n First Five Rows")
-print(df.head())
-print("\n Last Five Rows")
-print(df.tail())
-print("\n Missing Values")
-print(df.isnull().sum())
-print("\n Duplicate Records")
-print(df.duplicated().sum())
-print("\n Statistical Summary")
-print(df.describe(include='all'))
-
-df.to_csv('Generated_Employee_Dataset.csv',index = False)
-print("\n Dataset Genrated Succesfully")
+# Save Dataset
+df.to_csv('generated_Employee_Dataset.csv',index=False)
+print("\n Dataset Generated Successfully")
 print("File Name : Generated_Employee_Dataset.csv")
-print("File Location : /content/Genarated_Employee_Dataset.csv")
+print("File location : /contents/Generated_Employee_Dataset.csv")
+```
+
+---
+
+## PRACTICAL NO: 10 - Data Visualization using Power BI
+
+This practical involves creating visualizations in Power BI. The output shown is a dashboard with multiple charts including:
+- Survival rate by passenger class
+- Age distribution
+- Pie charts showing survival statistics
+- Bar charts for passenger class analysis
+- And other interactive visualizations
+
+*Note: Power BI is a visual tool, so code implementation varies based on the interface used.*
+
+---
+
+This covers all the Python codes from the PDF in text format!
