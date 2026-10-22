@@ -26,7 +26,7 @@ print("x =", x)
 w = -1
 print("Yin =", [x[i]*w for i in range(num_ip)])
 
-#xor
+# xor
 import numpy as np, random, math
 
 print("Neural Network Program")
@@ -54,21 +54,21 @@ for n in range(130000):
 
     if n >= 129996:
         print((v[0], v[1], v[4], np.float64(target), (target - v[4]) ** 2))
-
+        
 print(w)
 print(t)
 
-#back propogation algorithm
+# back propogation algorithm
 import math
 
-# Initial weights and inputs
+#Initial weights and inputs
 v1, v2, w = [0.6, 0.3], [-0.1, 0.4], [-0.2, 0.4, 0.1]
 b1, b2 = 0.3, 0.5
 x1, x2 = 0, 1
 alpha = 0.25
 sig = lambda v: 1/(1+math.exp(-v))
 
-# Forward Pass
+#Forward Pass
 zin1 = round(b1 + x1*v1[0] + x2*v2[0], 4)
 zin2 = round(b2 + x1*v1[1] + x2*v2[1], 4)
 z1, z2 = round(sig(zin1),4), round(sig(zin2),4)
@@ -76,13 +76,13 @@ z1, z2 = round(sig(zin1),4), round(sig(zin2),4)
 yin = w[0] + z1*w[1] + z2*w[2]
 y = sig(yin)
 
-# Backward Pass
+#Backward Pass
 dk = (1-y) * y*(1-y)
 din1, din2 = dk*w[1], dk*w[2]
 d1 = din1 * z1*(1-z1)
 d2 = din2 * z2*(1-z2)
 
-# Weight Updates
+#Weight Updates
 dw0, dw1, dw2 = alpha*dk, alpha*dk*z1, alpha*dk*z2
 dv01, dv11, dv21 = alpha*d1, alpha*d1*x1, alpha*d1*x2
 dv02, dv12, dv22 = alpha*d2, alpha*d2*x1, alpha*d2*x2
@@ -92,7 +92,7 @@ v2 = [v2[0]+dv21, v2[1]+dv22]
 w = [w[0]+dw0, w[1]+dw1, w[2]+dw2]
 b1, b2 = b1+dv01, b2+dv02
 
-# Output
+#Output
 print("zin1=", zin1, " zin2=", zin2)
 print("z1=", z1, " z2=", z2)
 print("yin=", yin, " y=", y)
@@ -104,7 +104,7 @@ print("Final v2=", v2)
 print("Final w=", w)
 print("bias b1=", b1, " b2=", b2)
 
-#error back propogation
+# error back propogation
 import math
 
 x, t = 1, 1
@@ -126,7 +126,7 @@ print("Updated weight second network w2 =", w2-c*s2*a1)
 print("Updated bias first network b1 =", b1-c*s1)
 print("Updated bias second network b2 =", b2-c*s2)
 
-#hopfield
+# hopfield
 W = [[0, -3, 3, -3],
      [-3, 0, -3, 3],
      [3, -3, 0, -3],
@@ -155,14 +155,14 @@ run([1, 0, 1, 0])
 print("\n\n")
 run([0, 1, 0, 1])
 
-#simple neural network model
+# simple neural network model
 x = float(input("Enter Value for X:"))
 w = float(input("Enter Value for W:"))
 b = float(input("Enter Value for B:"))
 y = (w * x) + b
 print(y)
 
-#hebbs rule
+# hebbs rule
 import numpy as np
 
 x1 = x2 = np.array([1, 1, 1, -1, 1, -1, 1, 1, 1])
@@ -213,7 +213,7 @@ pl.title('Color SOM')
 
 pl.show()
 
-#linear seperation
+# linear seperation
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -241,7 +241,7 @@ for x in np.arange(0, 1.05, 0.05):
 
 plt.show()
 
-#fuzzy ratio
+# fuzzy ratio
 !pip install fuzzywuzzy
 from fuzzywuzzy import fuzz, process
 
